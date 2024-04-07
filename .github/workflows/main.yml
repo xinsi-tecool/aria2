@@ -19,7 +19,7 @@ jobs:
         run: |
           git clone https://github.com/aria2/aria2.git
           cd aria2
-          ./configure --host=amd64-freebsd13
+          ./configure
           gmake
           gmake install
     - name: Upload artifact
