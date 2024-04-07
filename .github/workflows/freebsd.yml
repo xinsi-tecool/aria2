@@ -1,4 +1,4 @@
-name: Build aria2 on FreeBSD
+name: Build Aria2 for FreeBSD
 
 on:
   push:
@@ -8,34 +8,26 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    container: freebsd:13.1-RELEASE
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      
+      - name: Install dependencies
+        run: |
+          pkg update && pkg install -y git gmake gcc aria2
+      
+      - name: Build Aria2
+        run: |
+          git clone https://github.com/aria2/aria2.git
+          cd aria2
+          ./configure --host=amd64-freebsd13
+          gmake
+          gmake install
 
-    - name: Install FreeBSD system
-      uses: vbatts/freebsd-ci-github-actions@v1
-      with:
-        freebsd-version: 13.0
-
-    - name: Install dependencies
-      run: |
-        pkg install -y git automake autoconf libtool
-        # Add any other dependencies required for aria2 here
-
-    - name: Compile aria2
-      run: |
-        ./bootstrap.sh
-        ./configure
-        make
-
-    - name: Archive build artifacts
-      run: |
-        tar -czvf aria2-freebsd.tar.gz src/aria2c
-        # This will create a tarball of the compiled aria2 binary
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: aria2-freebsd
-        path: aria2-freebsd.tar.gz
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: aria2-freebsd
+          path: aria2/src/aria2c
