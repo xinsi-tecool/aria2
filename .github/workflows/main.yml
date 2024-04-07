@@ -1,0 +1,33 @@
+name: Build Aria2 for FreeBSD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: freebsd:13.1-RELEASE
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install dependencies
+        run: |
+          pkg update && pkg install -y git gmake gcc aria2
+      
+      - name: Build Aria2
+        run: |
+          git clone https://github.com/aria2/aria2.git
+          cd aria2
+          ./configure --host=amd64-freebsd13
+          gmake
+          gmake install
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: aria2-freebsd
+          path: aria2/src/aria2c
